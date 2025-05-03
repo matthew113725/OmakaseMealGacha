@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "献立ガチャ";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">献立ガチャアプリ</h1>
+
+    <div class="mb-3">
+        <input type="text" id="userName" class="form-control" placeholder="名前を入力" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label me-2">カテゴリ選択:</label>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="meal" value="Lunch" checked />
+            <label class="form-check-label">昼ごはん</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="meal" value="Dinner" />
+            <label class="form-check-label">夜ごはん</label>
+        </div>
+    </div>
+
+    <button id="spinBtn" class="btn btn-primary">ガチャを回す</button>
+
+    <div class="alert alert-info mt-3" id="result">🍽 結果がここに表示されます</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/js/script.js"></script>

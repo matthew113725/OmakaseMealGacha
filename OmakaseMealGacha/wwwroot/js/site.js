@@ -1,4 +1,29 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿$("#spinBtn").on("click", function () {
+    const selectedMeal = $('input[name="meal"]:checked').val();
+    const userName = $("#userName").val().trim();
 
-// Write your JavaScript code.
+    if (!userName) {
+        alert("名前を入力してください。");
+        return;
+    }
+
+    $.ajax({
+        url: '/Gacha/GetMenu',
+        type: 'POST',
+        data: {
+            category: selectedMeal,
+            userName: userName
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (data.error) {
+                alert(data.message || "エラーが発生しました。");
+                return;
+            }
+            $("#result").text(`${data.result}`);
+        },
+        error: function () {
+            alert("ガチャ実行中にエラーが発生しました。");
+        }
+    });
+});
