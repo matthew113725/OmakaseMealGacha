@@ -1,30 +1,129 @@
 ﻿@{
     ViewData["Title"] = "献立ガチャ";
+    var query = Context.Request.Query;
+    var editingItemId = query["editId"].ToString();
 }
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
 <div class="container mt-4">
     <h1 class="mb-4">献立ガチャアプリ</h1>
 
-    <div class="mb-3">
-        <input type="text" id="userName" class="form-control" placeholder="名前を入力" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label me-2">カテゴリ選択:</label>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="meal" value="Lunch" checked />
-            <label class="form-check-label">昼ごはん</label>
+    <!-- ガチャ -->
+    <section class="mb-5">
+        <h2 class="mb-3"><i class="bi bi-controller"></i> ガチャ</h2>
+        <div class="mb-3 w-50">
+            <input type="text" id="userName" class="form-control" placeholder="名前を入力" />
         </div>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="meal" value="Dinner" />
-            <label class="form-check-label">夜ごはん</label>
+        <a href="#" id="spinBtn" class="gacha-button">ガチャを回す</a>
+        <div class="alert alert-info mt-3" id="result">結果がここに表示されます</div>
+    </section>
+
+    <hr>
+
+    <!-- メニュー管理 -->
+    <section class="mb-5">
+        <h2><i class="bi bi-pencil-square me-2"></i>メニュー管理</h2>
+
+        <!-- メニュー追加 -->
+        <div class="mb-4">
+            <h4 class="mb-2">新しい献立を追加</h4>
+            <form id="addMenuForm" class="row g-3 align-items-center">
+                <div class="col-auto w-50">
+                    <input type="text" name="newItem" class="form-control" placeholder="献立名を入力" required />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-success">追加</button>
+                </div>
+            </form>
         </div>
-    </div>
 
-    <button id="spinBtn" class="btn btn-primary">ガチャを回す</button>
+        <!-- メニュー一覧 -->
+        <div>
+            <h4 class="mb-2">登録済みメニュー</h4>
+            @if (ViewBag.Menus is List<OmakaseMealGacha.Models.Menu> menus && menus.Any())
+            {
+                <ul class="list-group">
+                    @foreach (var menu in menus)
+                    {
+                        if (editingItemId == menu.Id.ToString())
+                        {
+                            <li class="list-group-item">
+                                <form id="editMenuForm" class="d-flex" data-id="@menu.Id">
+                                    <input type="hidden" name="id" value="@menu.Id" />
+                                    <input type="text" name="newName" value="@menu.Name" class="form-control me-2" required />
+                                    <button type="submit" class="btn btn-primary btn-sm w-25 me-2">保存</button>
+                                    <a href="/" class="btn btn-secondary btn-sm w-25 d-flex justify-content-center align-items-center">キャンセル</a>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@menu.Name</span>
+                                <div class="d-flex align-items-center">
 
-    <div class="alert alert-info mt-3" id="result">🍽 結果がここに表示されます</div>
+                                    <!-- ガチャ対象切替ボタン -->
+                                    <form class="toggle-gacha-form me-2" data-id="@menu.Id" data-in-gacha="@menu.IsInGacha.ToString().ToLower()">
+                                        <button type="submit"
+                                                class="btn btn-sm @(menu.IsInGacha ? "btn-outline-success" : "btn-outline-secondary")">
+                                            @(menu.IsInGacha ? "ガチャ対象" : "対象外")
+                                        </button>
+                                    </form>
+
+                                    <!-- 削除ボタン -->
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm delete-menu-btn me-1"
+                                            data-id="@menu.Id">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+
+                                    <!-- 編集ボタン -->
+                                    <a href="?editId=@menu.Id" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </li>
+
+                        }
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted">まだメニューが登録されていません。</p>
+            }
+        </div>
+    </section>
+
+    <hr>
+
+    <!-- 履歴表示 -->
+    <section>
+        <h2><i class="bi bi-clock-history"></i> ガチャ履歴（最新10件）</h2>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>名前</th>
+                    <th>結果</th>
+                    <th>時間</th>
+                </tr>
+            </thead>
+            <tbody id="history-body">
+                @foreach (var h in ViewBag.History as List<OmakaseMealGacha.Models.History>)
+                {
+                    <tr>
+                        <td>@h.UserName</td>
+                        <td>@h.MenuName</td>
+                        <td>@h.RolledAt.ToString("yyyy/MM/dd HH:mm:ss")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="~/js/script.js"></script>
