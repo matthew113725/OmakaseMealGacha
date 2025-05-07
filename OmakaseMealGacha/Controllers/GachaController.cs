@@ -16,7 +16,6 @@ namespace OmakaseMealGacha.Controllers
         public async Task<IActionResult> Gacha()
         {
             var menus = await _context.Menus
-                .Where(m => !m.IsDeleted)
                 .OrderBy(m => m.Id)
                 .ToListAsync();
 
@@ -33,14 +32,19 @@ namespace OmakaseMealGacha.Controllers
         [HttpPost]
         public JsonResult SpinGacha(string userName)
         {
-            var allMenus = _context.Menus
-                .Where(m => !m.IsDeleted && m.IsInGacha)
+            var allMenusInDb = _context.Menus.ToList();
+            var allMenus = allMenusInDb
+                .Where(m => m.IsInGacha)
                 .Select(m => m.Name)
                 .ToList();
 
-            if (allMenus.Count == 0)
+            if (allMenusInDb.Count == 0)
             {
-                return Json(new { error = true, message = "メニューが登録されていません。" });
+                return Json(new { error = true, message = "メニューが1件も登録されていません。" });
+            }
+            else if (allMenus.Count == 0)
+            {
+                return Json(new { error = true, message = "ガチャ対象のメニューがありません。" });
             }
 
             var random = new Random();
@@ -60,7 +64,7 @@ namespace OmakaseMealGacha.Controllers
         [HttpPost]
         public async Task<JsonResult> AddMenu(string newItem)
         {
-            bool exists = await _context.Menus.AnyAsync(m => m.Name == newItem && !m.IsDeleted);
+            bool exists = await _context.Menus.AnyAsync(m => m.Name == newItem);
 
             if (exists)
             {
@@ -70,9 +74,9 @@ namespace OmakaseMealGacha.Controllers
             var menu = new Menu
             {
                 Name = newItem,
+                IsInGacha = true,
                 CreatedOn = DateTime.Now,
-                LastModifiedOn = DateTime.Now,
-                IsDeleted = false
+                LastModifiedOn = DateTime.Now
             };
             _context.Menus.Add(menu);
             await _context.SaveChangesAsync();
@@ -85,7 +89,7 @@ namespace OmakaseMealGacha.Controllers
         {
             // 同じ名前の別のメニューが存在するか確認
             bool duplicateExists = await _context.Menus
-                .AnyAsync(m => m.Id != id && !m.IsDeleted && m.Name == newName);
+                .AnyAsync(m => m.Id != id && m.Name == newName);
 
             if (duplicateExists)
             {
@@ -125,8 +129,7 @@ namespace OmakaseMealGacha.Controllers
             var menu = await _context.Menus.FindAsync(id);
             if (menu != null)
             {
-                menu.IsDeleted = true;
-                menu.LastModifiedOn = DateTime.Now;
+                _context.Menus.Remove(menu);
                 await _context.SaveChangesAsync();
                 return Json(new { success = true });
             }

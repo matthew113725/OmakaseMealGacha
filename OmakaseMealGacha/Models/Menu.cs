@@ -16,9 +16,6 @@ namespace OmakaseMealGacha.Models
         [Column("is_in_gacha")]
         public bool IsInGacha { get; set; }
 
-        [Column("is_deleted")]
-        public bool IsDeleted { get; set; }
-
         [Column("created_on")]
         public DateTime CreatedOn { get; set; }
 

@@ -54,7 +54,7 @@
         const newItem = $(this).find('input[name="newItem"]').val().trim();
 
         if (newItem.length > 20) {
-            alert("献立名は20文字までです。");
+            alert("メニュー名は20文字までです。");
             return;
         }
 
@@ -85,7 +85,7 @@
         const newName = $form.find('input[name="newName"]').val();
 
         if (newName.length > 20) {
-            alert("献立名は20文字までです。");
+            alert("メニュー名は20文字までです。");
             return;
         }
 
